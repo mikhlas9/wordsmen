@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -5,11 +6,22 @@ const cors = require("cors");
 
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 app.use(express.json())
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }))
-mongoose.connect("mongodb+srv://words:newWords@cluster0.0jm7tmy.mongodb.net/?retryWrites=true&w=majority");
+app.use(bodyParser.urlencoded({ extended: true }));
+mongoose.set('strictQuery', false);
+const connectDB = async () =>{
+  try{
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+     console.log(`MongoDB Connected : ${conn.connect.host}`);
+  }catch(error){
+    console.log(error);
+    process.exit(1);
+  }
+}
+
 
 
 const newWords = new mongoose.Schema({
@@ -33,7 +45,12 @@ app.post("/register",async function(req,res){
     res.status(201).json({message: "hello world"});
 });
 
+// app.use(express.static(path.join(__dirname, "./client/build")));
+// app.get("*", (req,res) => {
+//     res.sendFile(path.join(__dirname, "./client/build/index.html"));
+// });
 
-app.listen(5000, function () {
-    console.log("port running at 5000");
+app.listen(PORT, function () {
+    console.log(`port running at ${PORT}`);
+    connectDB();
 });
